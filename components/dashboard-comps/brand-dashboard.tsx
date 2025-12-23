@@ -1,29 +1,30 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useUser } from "@clerk/nextjs"
 import {
-  Search,
-  TrendingUp,
-  Users,
-  Eye,
-  Heart,
-  MessageCircle,
-  Share2,
-  CheckCircle2,
-  Award,
-  Target,
-  BarChart3,
-  Calendar,
-  DollarSign,
-  FileText,
-  Plus,
+    Award,
+    BarChart3,
+    Calendar,
+    CheckCircle2,
+    DollarSign,
+    Eye,
+    FileText,
+    Heart,
+    MessageCircle,
+    Plus,
+    Search,
+    Share2,
+    Target,
+    TrendingUp,
+    Users,
 } from "lucide-react"
 import { useState } from "react"
 
@@ -153,6 +154,22 @@ const historicalCampaigns = [
 ]
 
 export function BrandDashboard() {
+    const { isSignedIn, user, isLoaded } = useUser()
+
+  // Use `isLoaded` to check if Clerk is loaded
+  if (!isLoaded) {
+    return <div>Loading...</div>
+  }
+
+  // Use `isSignedIn` to protect the content
+  if (!isSignedIn) {
+    return <div>Sign in to view this page</div>
+  }
+
+
+
+
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedNiche, setSelectedNiche] = useState("all")
   const [selectedRegion, setSelectedRegion] = useState("all")
@@ -171,7 +188,7 @@ export function BrandDashboard() {
         {/* Header */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
-            <h1 className="text-balance text-3xl font-bold tracking-tight">TechGear Pro</h1>
+            <h1 className="text-balance text-3xl font-bold tracking-tight">{user.firstName}</h1>
             <p className="text-pretty text-muted-foreground">Premium technology brand • DCCAK Partner Network</p>
           </div>
 

@@ -1,23 +1,24 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useUser } from "@clerk/nextjs"
 import {
-  Users,
-  TrendingUp,
-  DollarSign,
-  Briefcase,
-  CheckCircle2,
   AlertCircle,
-  FileText,
   Award,
-  Calendar,
   BarChart3,
-  UserPlus,
+  Briefcase,
+  Calendar,
+  CheckCircle2,
+  DollarSign,
+  FileText,
   Send,
+  TrendingUp,
+  UserPlus,
+  Users,
 } from "lucide-react"
 
 // Mock data
@@ -66,7 +67,7 @@ const rosterCreators = [
 
 const campaignInvitations = [
   {
-    brand: "TechGear Pro",
+    brand: "{user.firstName}",
     title: "Q1 Product Launch Campaign",
     budget: "$45,000",
     creators: 3,
@@ -113,6 +114,24 @@ const complianceChecklist = [
 ]
 
 export function AgencyDashboard() {
+    const { isSignedIn, user, isLoaded } = useUser()
+
+  // Use `isLoaded` to check if Clerk is loaded
+  if (!isLoaded) {
+    return <div>Loading...</div>
+  }
+
+  // Use `isSignedIn` to protect the content
+  if (!isSignedIn) {
+    return <div>Sign in to view this page</div>
+  }
+
+
+
+
+
+
+
   const totalRevenue = revenueData.reduce((sum, item) => sum + item.revenue, 0)
   const avgRevenue = totalRevenue / revenueData.length
   const activeCreators = rosterCreators.filter((c) => c.status === "active").length
@@ -128,7 +147,7 @@ export function AgencyDashboard() {
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <h1 className="text-balance text-3xl font-bold tracking-tight">Creative Collective Agency</h1>
+              <h1 className="text-balance text-3xl font-bold tracking-tight">{user.firstName}</h1>
               <Badge variant="outline" className="gap-1 border-primary bg-primary/10 text-primary">
                 <CheckCircle2 className="size-3" />
                 Verified Agency

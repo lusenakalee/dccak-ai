@@ -21,6 +21,7 @@ import {
   Target,
   BarChart3,
 } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
 
 // Mock data
 const platformLinks = [
@@ -86,6 +87,18 @@ const campaignHistory = [
 ]
 
 export function CreatorDashboard() {
+    const { isSignedIn, user, isLoaded } = useUser()
+
+      // Use `isLoaded` to check if Clerk is loaded
+  if (!isLoaded) {
+    return <div>Loading...</div>
+  }
+
+  // Use `isSignedIn` to protect the content
+  if (!isSignedIn) {
+    return <div>Sign in to view this page</div>
+  }
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-8">
@@ -97,7 +110,7 @@ export function CreatorDashboard() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <h1 className="text-balance text-3xl font-bold tracking-tight">Jane Doe</h1>
+                <h1 className="text-balance text-3xl font-bold tracking-tight">{user.firstName}!</h1>
                 <Badge variant="outline" className="gap-1 border-primary bg-primary/10 text-primary">
                   <CheckCircle2 className="size-3" />
                   DCCAK Verified
