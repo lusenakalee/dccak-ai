@@ -8,18 +8,19 @@ const prisma = new PrismaClient()
 // GET a single campaign
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
-    
+    const { id } = await params // Await params
+   
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const campaign = await prisma.campaign.findFirst({
       where: {
-        id: params.id,
+        id,
         userId,
       },
     })
@@ -44,21 +45,22 @@ export async function GET(
 // PATCH update a campaign
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
-    
+    const { id } = await params // Await params
+   
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await req.json()
-    
+   
     // Check if campaign belongs to user
     const existingCampaign = await prisma.campaign.findFirst({
       where: {
-        id: params.id,
+        id,
         userId,
       },
     })
@@ -72,7 +74,7 @@ export async function PATCH(
 
     // Prepare update data
     const updateData: any = {}
-    
+   
     if (body.campaignName) updateData.campaignName = body.campaignName
     if (body.campaignTag) updateData.campaignTag = body.campaignTag
     if (body.dueDate) updateData.dueDate = new Date(body.dueDate)
@@ -88,7 +90,7 @@ export async function PATCH(
 
     const campaign = await prisma.campaign.update({
       where: {
-        id: params.id,
+        id,
       },
       data: updateData,
     })
@@ -106,11 +108,12 @@ export async function PATCH(
 // DELETE a campaign
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
-    
+    const { id } = await params // Await params
+   
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -118,7 +121,7 @@ export async function DELETE(
     // Check if campaign belongs to user
     const existingCampaign = await prisma.campaign.findFirst({
       where: {
-        id: params.id,
+        id,
         userId,
       },
     })
@@ -132,7 +135,7 @@ export async function DELETE(
 
     await prisma.campaign.delete({
       where: {
-        id: params.id,
+        id,
       },
     })
 
