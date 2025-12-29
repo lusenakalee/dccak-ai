@@ -1,6 +1,7 @@
 'use server'
 
 import { auth, clerkClient } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma' // Adjust this import path to your Prisma client location
 
 export const completeOnboarding = async (formData: FormData) => {
   const { isAuthenticated, userId } = await auth()
@@ -35,7 +36,45 @@ export const completeOnboarding = async (formData: FormData) => {
     if (facebook) socialLinks.facebook = facebook
     if (twitter) socialLinks.twitter = twitter
 
-    // Update user metadata
+    // Get user details from Clerk
+    const clerkUser = await client.users.getUser(userId)
+    const email = clerkUser.emailAddresses[0]?.emailAddress || ''
+    const name = clerkUser.firstName && clerkUser.lastName 
+      ? `${clerkUser.firstName} ${clerkUser.lastName}` 
+      : clerkUser.firstName || clerkUser.username || null
+
+    // Save to Prisma database
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {
+        title,
+        niche,
+        phone,
+        youtube: youtube || null,
+        tiktok: tiktok || null,
+        instagram: instagram || null,
+        facebook: facebook || null,
+        twitter: twitter || null,
+        onboardingCompleted: true,
+        updatedAt: new Date(),
+      },
+      create: {
+        id: userId,
+        email,
+        name,
+        title,
+        niche,
+        phone,
+        youtube: youtube || null,
+        tiktok: tiktok || null,
+        instagram: instagram || null,
+        facebook: facebook || null,
+        twitter: twitter || null,
+        onboardingCompleted: true,
+      },
+    })
+
+    // Update Clerk user metadata
     const res = await client.users.updateUser(userId, {
       publicMetadata: {
         onboardingComplete: true,
@@ -48,7 +87,7 @@ export const completeOnboarding = async (formData: FormData) => {
 
     return { message: 'Profile completed successfully', data: res.publicMetadata }
   } catch (err) {
-    console.error('Error updating user metadata:', err)
+    console.error('Error updating user profile:', err)
     return { error: 'There was an error updating your profile. Please try again.' }
   }
 }
