@@ -17,6 +17,22 @@ model User {
   id        String     @id @map("_id")  // This should match Clerk's userId
   email     String     @unique
   name      String?
+  
+  // Onboarding fields
+  title     String?    // Professional title
+  niche     String?    // User's niche/category
+  phone     String?    // Phone number
+  
+  // Social media links
+  youtube   String?
+  tiktok    String?
+  instagram String?
+  facebook  String?
+  twitter   String?
+  
+  // Onboarding completion tracking
+  onboardingCompleted Boolean  @default(false)
+  
   campaigns Campaign[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
