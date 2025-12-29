@@ -5,14 +5,24 @@ const isOnboardingRoute = createRouteMatcher(['/onboarding'])
 const isPublicRoute = createRouteMatcher(['/'])
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
 
+// Add this line - exclude webhook routes
+const isWebhookRoute = createRouteMatcher(['/api/webhooks(.*)'])
+
 // Role-based route matchers
 const isCreatorRoute = createRouteMatcher(['/dashboard/creator(.*)'])
 const isAgencyRoute = createRouteMatcher(['/dashboard/agency(.*)'])
 const isBrandRoute = createRouteMatcher(['/dashboard/brand(.*)'])
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
+  // Skip middleware for webhook routes
+  if (isWebhookRoute(req)) {
+    return NextResponse.next()
+  }
+
   const { isAuthenticated, sessionClaims, redirectToSignIn, has } = await auth()
 
+  // ... rest of your middleware code remains the same
+  
   // For users visiting /onboarding, don't try to redirect
   if (isAuthenticated && isOnboardingRoute(req)) {
     return NextResponse.next()
@@ -24,7 +34,6 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   }
 
   // Catch users who do not have `onboardingComplete: true` in their publicMetadata
-  // Redirect them to the /onboarding route to complete onboarding
   if (isAuthenticated && !sessionClaims?.metadata?.onboardingComplete) {
     const onboardingUrl = new URL('/onboarding', req.url)
     return NextResponse.redirect(onboardingUrl)
@@ -32,23 +41,19 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // Role-based authorization checks
   if (isAuthenticated) {
-    // Check creator routes
     if (isCreatorRoute(req) && !has({ role: 'org:creator' })) {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
 
-    // Check agency routes
     if (isAgencyRoute(req) && !has({ role: 'org:agency' })) {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
 
-    // Check brand routes
     if (isBrandRoute(req) && !has({ role: 'org:brand' })) {
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
   }
 
-  // If the user is logged in and the route is protected, let them view.
   if (isAuthenticated && !isPublicRoute(req)) {
     return NextResponse.next()
   }
@@ -56,9 +61,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 }
