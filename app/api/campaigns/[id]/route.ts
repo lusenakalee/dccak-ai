@@ -1,9 +1,10 @@
 // app/api/campaigns/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@clerk/nextjs/server"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma" // Import the singleton instance
 
-const prisma = new PrismaClient()
+// Remove this line:
+// const prisma = new PrismaClient()
 
 // GET a single campaign
 export async function GET(
@@ -12,7 +13,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth()
-    const { id } = await params // Await params
+    const { id } = await params
    
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -49,7 +50,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth()
-    const { id } = await params // Await params
+    const { id } = await params
    
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -112,7 +113,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth()
-    const { id } = await params // Await params
+    const { id } = await params
    
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
