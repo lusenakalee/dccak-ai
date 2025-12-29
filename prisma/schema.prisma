@@ -15,8 +15,66 @@ datasource db {
 }
 
 model User {
-  id    String  @id @map("_id")  // Remove @default(auto()) and @db.ObjectId
-  email String  @unique
-  name  String?
+  id        String     @id @map("_id")  // This should match Clerk's userId
+  email     String     @unique
+  name      String?
+  campaigns Campaign[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
+enum CampaignNiche {
+  TECHNOLOGY
+  BEAUTY
+  GAMING
+  LIFESTYLE
+  FASHION
+  FOOD
+  FITNESS
+  TRAVEL
+  EDUCATION
+  ENTERTAINMENT
+}
+
+enum CampaignType {
+  BRAND_CAMPAIGN
+  GRANT
+  EVENT
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PLANNING
+  COMPLETED
+  CANCELLED
+}
+
+model Campaign {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  campaignName      String
+  campaignTag       CampaignNiche
+  dueDate           DateTime
+  budget            Float
+  campaignType      CampaignType
+  creatorsNeeded    Int
+  status            CampaignStatus @default(DRAFT)
+  
+  // Relation to User
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Additional useful fields
+  description       String?
+  startDate         DateTime?
+  impressions       Int            @default(0)
+  engagement        Float          @default(0)
+  progress          Int            @default(0)
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([campaignTag])
+}

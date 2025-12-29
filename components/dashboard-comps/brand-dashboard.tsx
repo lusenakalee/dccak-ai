@@ -1,3 +1,4 @@
+// components/brand-dashboard.tsx
 "use client"
 
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,7 @@ import {
     Eye,
     FileText,
     Heart,
+    Loader2,
     MessageCircle,
     Plus,
     Search,
@@ -26,9 +28,11 @@ import {
     TrendingUp,
     Users,
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { CampaignForm } from "../campaign-comps/campaign-form"
+import { format } from "date-fns"
 
-// Mock data
+// Mock data for creators (until you build creator functionality)
 const creators = [
   {
     id: 1,
@@ -84,42 +88,6 @@ const creators = [
   },
 ]
 
-const activeCampaigns = [
-  {
-    name: "Q1 Product Launch",
-    status: "active",
-    creators: 3,
-    budget: "$45,000",
-    progress: 65,
-    startDate: "2024-01-15",
-    endDate: "2024-02-28",
-    impressions: "2.8M",
-    engagement: "11.5%",
-  },
-  {
-    name: "Spring Collection Teaser",
-    status: "active",
-    creators: 2,
-    budget: "$30,000",
-    progress: 40,
-    startDate: "2024-02-01",
-    endDate: "2024-03-15",
-    impressions: "1.5M",
-    engagement: "13.2%",
-  },
-  {
-    name: "Brand Awareness Campaign",
-    status: "planning",
-    creators: 5,
-    budget: "$75,000",
-    progress: 15,
-    startDate: "2024-03-01",
-    endDate: "2024-04-30",
-    impressions: "0",
-    engagement: "0%",
-  },
-]
-
 const historicalCampaigns = [
   {
     name: "Holiday Gift Guide 2023",
@@ -154,26 +122,53 @@ const historicalCampaigns = [
 ]
 
 export function BrandDashboard() {
-    const { isSignedIn, user, isLoaded } = useUser()
-
-  // Use `isLoaded` to check if Clerk is loaded
-  if (!isLoaded) {
-    return <div>Loading...</div>
-  }
-
-  // Use `isSignedIn` to protect the content
-  if (!isSignedIn) {
-    return <div>Sign in to view this page</div>
-  }
-
-
-
-
-
+  const { isSignedIn, user, isLoaded } = useUser()
+  const [campaigns, setCampaigns] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedNiche, setSelectedNiche] = useState("all")
   const [selectedRegion, setSelectedRegion] = useState("all")
   const [followerRange, setFollowerRange] = useState([0, 1000000])
+
+  // Fetch campaigns from API
+  useEffect(() => {
+    if (isSignedIn) {
+      fetchCampaigns()
+    }
+  }, [isSignedIn])
+
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("/api/campaigns")
+      if (response.ok) {
+        const data = await response.json()
+        setCampaigns(data)
+      }
+    } catch (error) {
+      console.error("Error fetching campaigns:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Sign in to view this page</h2>
+        </div>
+      </div>
+    )
+  }
 
   const filteredCreators = creators.filter((creator) => {
     const matchesSearch = creator.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -182,14 +177,24 @@ export function BrandDashboard() {
     return matchesSearch && matchesNiche && matchesRegion
   })
 
+  const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE")
+  const totalImpressions = campaigns.reduce((sum, c) => sum + (c.impressions || 0), 0)
+  const avgEngagement = campaigns.length > 0
+    ? (campaigns.reduce((sum, c) => sum + (c.engagement || 0), 0) / campaigns.length).toFixed(1)
+    : "0.0"
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-8">
         {/* Header */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
-            <h1 className="text-balance text-3xl font-bold tracking-tight">{user.firstName}</h1>
-            <p className="text-pretty text-muted-foreground">Premium technology brand • DCCAK Partner Network</p>
+            <h1 className="text-balance text-3xl font-bold tracking-tight">
+              {user.firstName}'s Dashboard
+            </h1>
+            <p className="text-pretty text-muted-foreground">
+              Premium technology brand • DCCAK Partner Network
+            </p>
           </div>
 
           <div className="flex gap-3">
@@ -197,10 +202,15 @@ export function BrandDashboard() {
               <FileText className="size-4" />
               Reports
             </Button>
-            <Button>
-              <Plus className="size-4" />
-              New Campaign
-            </Button>
+            <CampaignForm
+              trigger={
+                <Button>
+                  <Plus className="size-4" />
+                  New Campaign
+                </Button>
+              }
+              onSuccess={fetchCampaigns}
+            />
           </div>
         </div>
 
@@ -212,8 +222,8 @@ export function BrandDashboard() {
               <Target className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{activeCampaigns.filter((c) => c.status === "active").length}</div>
-              <p className="text-xs text-muted-foreground">{activeCampaigns.length} total campaigns</p>
+              <div className="text-2xl font-bold">{activeCampaigns.length}</div>
+              <p className="text-xs text-muted-foreground">{campaigns.length} total campaigns</p>
             </CardContent>
           </Card>
 
@@ -223,7 +233,9 @@ export function BrandDashboard() {
               <TrendingUp className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4.3M</div>
+              <div className="text-2xl font-bold">
+                {totalImpressions > 0 ? `${(totalImpressions / 1000000).toFixed(1)}M` : "0"}
+              </div>
               <p className="text-xs text-muted-foreground">Campaign impressions</p>
             </CardContent>
           </Card>
@@ -234,7 +246,7 @@ export function BrandDashboard() {
               <BarChart3 className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12.4%</div>
+              <div className="text-2xl font-bold">{avgEngagement}%</div>
               <p className="text-xs text-muted-foreground">Across all campaigns</p>
             </CardContent>
           </Card>
@@ -252,12 +264,91 @@ export function BrandDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="discovery" className="space-y-4">
+        <Tabs defaultValue="campaigns" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none">
-            <TabsTrigger value="discovery">Creator Discovery</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="discovery">Creator Discovery</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
+
+          {/* Campaigns */}
+          <TabsContent value="campaigns" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Campaigns</CardTitle>
+                <CardDescription>Monitor your ongoing creator partnerships</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : campaigns.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">
+                    <p>No campaigns yet. Create your first campaign to get started!</p>
+                  </div>
+                ) : (
+                  campaigns.map((campaign) => (
+                    <div key={campaign.id} className="space-y-3 rounded-lg border bg-card p-4">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{campaign.campaignName}</h3>
+                            <Badge variant={campaign.status === "ACTIVE" ? "default" : "secondary"}>
+                              {campaign.status.toLowerCase()}
+                            </Badge>
+                            <Badge variant="outline">{campaign.campaignTag}</Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Users className="size-4" />
+                              {campaign.creatorsNeeded} creators needed
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <DollarSign className="size-4" />
+                              ${campaign.budget.toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="size-4" />
+                              Due: {format(new Date(campaign.dueDate), "MMM dd, yyyy")}
+                            </span>
+                          </div>
+                          {campaign.description && (
+                            <p className="text-sm text-muted-foreground">{campaign.description}</p>
+                          )}
+                          <div className="flex flex-wrap gap-4 text-sm">
+                            <span className="text-muted-foreground">
+                              <Eye className="inline size-4" /> {campaign.impressions.toLocaleString()} impressions
+                            </span>
+                            <span className="text-primary">
+                              <TrendingUp className="inline size-4" /> {campaign.engagement}% engagement
+                            </span>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </div>
+                      {campaign.progress > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Campaign Progress</span>
+                            <span className="font-medium">{campaign.progress}%</span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                            <div
+                              className="h-full bg-primary transition-all"
+                              style={{ width: `${campaign.progress}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Creator Discovery */}
           <TabsContent value="discovery" className="space-y-4">
@@ -370,104 +461,6 @@ export function BrandDashboard() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Campaigns */}
-          <TabsContent value="campaigns" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Campaigns</CardTitle>
-                <CardDescription>Monitor your ongoing creator partnerships</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {activeCampaigns.map((campaign, index) => (
-                  <div key={index} className="space-y-3 rounded-lg border bg-card p-4">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{campaign.name}</h3>
-                          <Badge variant={campaign.status === "active" ? "default" : "secondary"}>
-                            {campaign.status}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Users className="size-4" />
-                            {campaign.creators} creators
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="size-4" />
-                            {campaign.budget}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="size-4" />
-                            {campaign.startDate} - {campaign.endDate}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-4 text-sm">
-                          <span className="text-muted-foreground">
-                            <Eye className="inline size-4" /> {campaign.impressions} impressions
-                          </span>
-                          <span className="text-primary">
-                            <TrendingUp className="inline size-4" /> {campaign.engagement} engagement
-                          </span>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Campaign Progress</span>
-                        <span className="font-medium">{campaign.progress}%</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                        <div className="h-full bg-primary transition-all" style={{ width: `${campaign.progress}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Create Campaign Brief</CardTitle>
-                <CardDescription>Start a new creator partnership campaign</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="campaign-name">Campaign Name</Label>
-                    <Input id="campaign-name" placeholder="Q2 Product Launch" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="budget">Budget</Label>
-                    <Input id="budget" placeholder="$50,000" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="niche">Target Niche</Label>
-                    <Select>
-                      <SelectTrigger id="niche">
-                        <SelectValue placeholder="Select niche" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="beauty">Beauty</SelectItem>
-                        <SelectItem value="gaming">Gaming</SelectItem>
-                        <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="creators">Number of Creators</Label>
-                    <Input id="creators" type="number" placeholder="3" />
-                  </div>
-                </div>
-                <Button className="w-full">Create Campaign Brief</Button>
               </CardContent>
             </Card>
           </TabsContent>

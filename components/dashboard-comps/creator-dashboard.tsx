@@ -99,6 +99,9 @@ export function CreatorDashboard() {
     return <div>Sign in to view this page</div>
   }
 
+
+  const applicationName = user?.publicMetadata?.applicationName
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-8">

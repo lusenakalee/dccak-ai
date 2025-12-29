@@ -5,8 +5,13 @@ const isOnboardingRoute = createRouteMatcher(['/onboarding'])
 const isPublicRoute = createRouteMatcher(['/'])
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
 
+// Role-based route matchers
+const isCreatorRoute = createRouteMatcher(['/dashboard/creator(.*)'])
+const isAgencyRoute = createRouteMatcher(['/dashboard/agency(.*)'])
+const isBrandRoute = createRouteMatcher(['/dashboard/brand(.*)'])
+
 export default clerkMiddleware(async (auth, req: NextRequest) => {
-  const { isAuthenticated, sessionClaims, redirectToSignIn } = await auth()
+  const { isAuthenticated, sessionClaims, redirectToSignIn, has } = await auth()
 
   // For users visiting /onboarding, don't try to redirect
   if (isAuthenticated && isOnboardingRoute(req)) {
@@ -14,7 +19,9 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   }
 
   // If the user isn't signed in and the route is private, redirect to sign-in
-  if (!isAuthenticated && !isPublicRoute(req)) return redirectToSignIn({ returnBackUrl: req.url })
+  if (!isAuthenticated && !isPublicRoute(req)) {
+    return redirectToSignIn({ returnBackUrl: req.url })
+  }
 
   // Catch users who do not have `onboardingComplete: true` in their publicMetadata
   // Redirect them to the /onboarding route to complete onboarding
@@ -23,8 +30,28 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.redirect(onboardingUrl)
   }
 
+  // Role-based authorization checks
+  if (isAuthenticated) {
+    // Check creator routes
+    if (isCreatorRoute(req) && !has({ role: 'org:creator' })) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+
+    // Check agency routes
+    if (isAgencyRoute(req) && !has({ role: 'org:agency' })) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+
+    // Check brand routes
+    if (isBrandRoute(req) && !has({ role: 'org:brand' })) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+  }
+
   // If the user is logged in and the route is protected, let them view.
-  if (isAuthenticated && !isPublicRoute(req)) return NextResponse.next()
+  if (isAuthenticated && !isPublicRoute(req)) {
+    return NextResponse.next()
+  }
 })
 
 export const config = {
