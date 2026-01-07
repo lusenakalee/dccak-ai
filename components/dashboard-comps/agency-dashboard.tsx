@@ -219,7 +219,7 @@ export function AgencyDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="roster" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-none">
+<TabsList className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:inline-flex">
             <TabsTrigger value="roster">Roster</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>

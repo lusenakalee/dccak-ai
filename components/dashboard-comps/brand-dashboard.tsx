@@ -265,7 +265,7 @@ export function BrandDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="campaigns" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-none">
+<TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="discovery">Creator Discovery</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>

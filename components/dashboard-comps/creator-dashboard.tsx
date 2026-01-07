@@ -192,7 +192,7 @@ export function CreatorDashboard() {
 
         {/* Tabs for Content & Analytics */}
         <Tabs defaultValue="opportunities" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-none">
+<TabsList className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:inline-flex">
             <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
             <TabsTrigger value="content">Portfolio</TabsTrigger>
             <TabsTrigger value="growth">Growth</TabsTrigger>

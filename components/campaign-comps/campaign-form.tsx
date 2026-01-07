@@ -50,19 +50,19 @@ const NICHES = [
   { value: "TRAVEL", label: "Travel" },
   { value: "EDUCATION", label: "Education" },
   { value: "ENTERTAINMENT", label: "Entertainment" },
-]
+] as const
 
 const CAMPAIGN_TYPES = [
   { value: "BRAND_CAMPAIGN", label: "Brand Campaign" },
   { value: "GRANT", label: "Grant" },
   { value: "EVENT", label: "Event" },
-]
+] as const
 
 export function CampaignForm({ trigger, onSuccess }: CampaignFormProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  
+ 
   const [formData, setFormData] = useState({
     campaignName: "",
     campaignTag: "",
@@ -76,8 +76,8 @@ export function CampaignForm({ trigger, onSuccess }: CampaignFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.campaignName || !formData.campaignTag || !formData.dueDate || 
+   
+    if (!formData.campaignName || !formData.campaignTag || !formData.dueDate ||
         !formData.budget || !formData.campaignType || !formData.creatorsNeeded) {
       toast.error("Please fill in all required fields")
       return
@@ -86,25 +86,49 @@ export function CampaignForm({ trigger, onSuccess }: CampaignFormProps) {
     setLoading(true)
 
     try {
+      const payload = {
+        campaignName: formData.campaignName,
+        campaignTag: formData.campaignTag,
+        dueDate: formData.dueDate.toISOString(),
+        startDate: formData.startDate?.toISOString() || null,
+        budget: formData.budget,
+        campaignType: formData.campaignType,
+        creatorsNeeded: formData.creatorsNeeded,
+        description: formData.description || "",
+      }
+
+      console.log("Sending payload:", payload)
+
       const response = await fetch("/api/campaigns", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          dueDate: formData.dueDate?.toISOString(),
-          startDate: formData.startDate?.toISOString(),
-        }),
+        body: JSON.stringify(payload),
       })
 
+      console.log("Response status:", response.status)
+      console.log("Response headers:", response.headers)
+
+      // Try to get response text first
+      const responseText = await response.text()
+      console.log("Response text:", responseText)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create campaign")
+        // Try to parse as JSON if possible
+        let errorMessage = "Failed to create campaign"
+        try {
+          const errorData = JSON.parse(responseText)
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          // If not JSON, use the text as is
+          errorMessage = responseText || errorMessage
+        }
+        throw new Error(errorMessage)
       }
 
-      const campaign = await response.json()
-      
+      const campaign = JSON.parse(responseText)
+     
       toast.success("Campaign created successfully!")
       setOpen(false)
       setFormData({
@@ -117,7 +141,7 @@ export function CampaignForm({ trigger, onSuccess }: CampaignFormProps) {
         creatorsNeeded: "",
         description: "",
       })
-      
+     
       router.refresh()
       onSuccess?.()
     } catch (error) {
@@ -133,14 +157,14 @@ export function CampaignForm({ trigger, onSuccess }: CampaignFormProps) {
       <DialogTrigger asChild>
         {trigger || <Button>Create Campaign</Button>}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-150">
         <DialogHeader>
           <DialogTitle>Create Campaign Brief</DialogTitle>
           <DialogDescription>
             Start a new creator partnership campaign
           </DialogDescription>
         </DialogHeader>
-        
+       
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="campaignName">
