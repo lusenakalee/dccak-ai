@@ -20,8 +20,13 @@ import {
   Gift,
   Target,
   BarChart3,
+  Loader2,
 } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
+import { useEffect, useState } from "react"
+import { format } from "date-fns"
+import { Campaign } from "@prisma/client"
+import { useRouter } from "next/navigation"
 
 // Mock data
 const platformLinks = [
@@ -44,33 +49,6 @@ const contentPortfolio = [
   },
 ]
 
-const opportunities = [
-  {
-    type: "Brand Campaign",
-    title: "Tech Brand Partnership Q1",
-    budget: "$15,000",
-    deadline: "2024-02-15",
-    tags: ["Technology", "Review", "Sponsored"],
-    icon: Briefcase,
-  },
-  {
-    type: "Grant",
-    title: "Creator Development Fund",
-    budget: "$5,000",
-    deadline: "2024-02-28",
-    tags: ["Education", "Growth"],
-    icon: Gift,
-  },
-  {
-    type: "Event",
-    title: "CreatorCon 2024 Speaker",
-    budget: "Paid",
-    deadline: "2024-03-10",
-    tags: ["Speaking", "Networking"],
-    icon: Users,
-  },
-]
-
 const growthTimeline = [
   { month: "Jan", followers: 85000 },
   { month: "Feb", followers: 92000 },
@@ -87,20 +65,47 @@ const campaignHistory = [
 ]
 
 export function CreatorDashboard() {
-    const { isSignedIn, user, isLoaded } = useUser()
+ const { isSignedIn, user, isLoaded } = useUser()
+  const [opportunities, setOpportunities] = useState<Campaign[]>([])
+  const [loading, setLoading] = useState(true)
+    const router = useRouter()
+  
 
-      // Use `isLoaded` to check if Clerk is loaded
+  /* Fetch ACTIVE campaigns as opportunities */
+  useEffect(() => {
+    if (!isSignedIn) return
+    fetchActiveCampaigns()
+  }, [isSignedIn])
+
+  const fetchActiveCampaigns = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch("/api/opportunities")
+      if (!res.ok) return
+      const data: Campaign[] = await res.json()
+      setOpportunities(data)
+    } catch (err) {
+      console.error("Failed to load opportunities:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (!isLoaded) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
   }
 
-  // Use `isSignedIn` to protect the content
   if (!isSignedIn) {
-    return <div>Sign in to view this page</div>
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <h2 className="text-2xl font-bold">Sign in to view this page</h2>
+      </div>
+    )
   }
-
-
-  const applicationName = user?.publicMetadata?.applicationName
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -109,7 +114,7 @@ export function CreatorDashboard() {
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
             <div className="flex size-20 items-center justify-center rounded-full bg-primary/20 text-2xl font-bold text-primary">
-              JD
+              {user.firstName?.charAt(0).toUpperCase() || "C"}
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -192,67 +197,90 @@ export function CreatorDashboard() {
 
         {/* Tabs for Content & Analytics */}
         <Tabs defaultValue="opportunities" className="space-y-4">
-<TabsList className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-4 gap-2 lg:w-auto lg:inline-flex">
             <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
             <TabsTrigger value="content">Portfolio</TabsTrigger>
             <TabsTrigger value="growth">Growth</TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           </TabsList>
 
-          {/* Opportunities Feed */}
-          <TabsContent value="opportunities" className="space-y-4">
+          {/* Opportunities Feed - Now showing real campaigns */}
+           <TabsContent value="opportunities">
             <Card>
               <CardHeader>
-                <CardTitle>Available Opportunities</CardTitle>
-                <CardDescription>Brand campaigns, grants, and events matched to your profile</CardDescription>
+                <CardTitle>Active Campaign Opportunities</CardTitle>
+                <CardDescription>
+                  Brands currently looking for creators
+                </CardDescription>
               </CardHeader>
+
               <CardContent className="space-y-4">
-                {opportunities.map((opp, index) => {
-                  const Icon = opp.icon
-                  return (
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : opportunities.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">
+                    No active opportunities right now.
+                  </div>
+                ) : (
+                  opportunities.map((campaign) => (
                     <div
-                      key={index}
+                      key={campaign.id}
                       className="flex flex-col gap-4 rounded-lg border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex gap-3">
                         <div className="rounded-lg bg-primary/10 p-2">
-                          <Icon className="size-5 text-primary" />
+                          <Briefcase className="size-5 text-primary" />
                         </div>
+
                         <div className="space-y-2">
-                          <div>
-                            <Badge variant="outline" className="mb-2">
-                              {opp.type}
-                            </Badge>
-                            <h3 className="font-semibold">{opp.title}</h3>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {opp.tags.map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <h3 className="font-semibold">
+                            {campaign.campaignName}
+                          </h3>
+
+                          {campaign.description && (
+                            <p className="text-sm text-muted-foreground">
+                              {campaign.description}
+                            </p>
+                          )}
+
+                          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <DollarSign className="size-4" />
-                              {opp.budget}
+                              ${campaign.budget.toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Users className="size-4" />
+                              {campaign.creatorsNeeded} creators
                             </span>
                             <span className="flex items-center gap-1">
                               <Calendar className="size-4" />
-                              Due {opp.deadline}
+                              Due {format(new Date(campaign.dueDate), "MMM dd, yyyy")}
                             </span>
                           </div>
                         </div>
                       </div>
+
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm">
                           Learn More
                         </Button>
-                        <Button size="sm">Apply</Button>
+                           <Button
+  size="sm"
+  onClick={() =>
+    router.push(
+      `/dashboard/creator/apply-opportunity?campaignId=${campaign.id}`
+    )
+  }
+>
+  Apply
+</Button>
+
                       </div>
                     </div>
-                  )
-                })}
+                  ))
+                )}
               </CardContent>
             </Card>
           </TabsContent>

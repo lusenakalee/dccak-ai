@@ -14,25 +14,25 @@ datasource db {
 }
 
 model User {
-  id        String     @id @map("_id")  // This should match Clerk's userId
-  email     String     @unique
-  name      String?
-  
+  id    String  @id @map("_id") // This should match Clerk's userId
+  email String  @unique
+  name  String?
+
   // Onboarding fields
-  title     String?    // Professional title
-  niche     String?    // User's niche/category
-  phone     String?    // Phone number
-  
+  title String? // Professional title
+  niche String? // User's niche/category
+  phone String? // Phone number
+
   // Social media links
   youtube   String?
   tiktok    String?
   instagram String?
   facebook  String?
   twitter   String?
-  
+
   // Onboarding completion tracking
-  onboardingCompleted Boolean  @default(false)
-  
+  onboardingCompleted Boolean @default(false)
+
   campaigns Campaign[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -66,30 +66,55 @@ enum CampaignStatus {
 }
 
 model Campaign {
-  id                String         @id @default(auto()) @map("_id") @db.ObjectId
-  campaignName      String
-  campaignTag       CampaignNiche
-  dueDate           DateTime
-  budget            Float
-  campaignType      CampaignType
-  creatorsNeeded    Int
-  status            CampaignStatus @default(DRAFT)
-  
-  // Relation to User
-  userId            String
-  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Additional useful fields
-  description       String?
-  startDate         DateTime?
-  impressions       Int            @default(0)
-  engagement        Float          @default(0)
-  progress          Int            @default(0)
-  
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  campaignName   String
+  campaignTag    CampaignNiche
+  dueDate        DateTime
+  budget         Float
+  campaignType   CampaignType
+  creatorsNeeded Int
+  status         CampaignStatus @default(DRAFT)
+
+  // Relation to User (Brand)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 🔹 Applications (FIX)
+  applications CampaignApplication[]
+
+  // Additional fields
+  description String?
+  startDate   DateTime?
+  impressions Int       @default(0)
+  engagement  Float     @default(0)
+  progress    Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@index([status])
   @@index([campaignTag])
+}
+
+model CampaignApplication {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  campaignId String @db.ObjectId
+  creatorId  String // Clerk userId
+
+  status    ApplicationStatus @default(PENDING)
+  appliedAt DateTime          @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, creatorId]) // 🚨 PREVENT DUPLICATES
+  @@index([creatorId])
+  @@index([campaignId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

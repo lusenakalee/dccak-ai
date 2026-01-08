@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+
 import {
     Award,
     BarChart3,
@@ -129,6 +131,8 @@ export function BrandDashboard() {
   const [selectedNiche, setSelectedNiche] = useState("all")
   const [selectedRegion, setSelectedRegion] = useState("all")
   const [followerRange, setFollowerRange] = useState([0, 1000000])
+  const router = useRouter()
+
 
   // Fetch campaigns from API
   useEffect(() => {
@@ -325,9 +329,13 @@ export function BrandDashboard() {
                             </span>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
+                        <Button 
+        variant="outline" 
+        size="sm"
+        onClick={() => router.push(`/dashboard/brand/details?id=${campaign.id}`)}
+      >
+        View Details
+      </Button>
                       </div>
                       {campaign.progress > 0 && (
                         <div className="space-y-2">
