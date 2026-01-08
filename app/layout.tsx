@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
+
 
 import {
   ClerkProvider,
@@ -12,6 +14,7 @@ import {
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Navbar } from '@/components/landing/navbar'
+import { Footer } from '@/components/landing/footer'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,6 +40,12 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+                <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           <header className="">
             {/* <SignedOut>
               <SignInButton />
@@ -51,8 +60,13 @@ export default function RootLayout({
             </SignedIn> */}
             <Navbar/>
           </header>
+          <main>
+
           {children}
+          <Footer />
+          </main>
               <Toaster />
+              </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

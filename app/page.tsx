@@ -22,7 +22,6 @@ export default function HomePage() {
         <GallerySection />
         <TestimonialsSection />
       </main>
-      <Footer />
     </div>
   )
 }

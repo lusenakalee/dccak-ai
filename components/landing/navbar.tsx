@@ -1,20 +1,20 @@
 "use client"
 
-import Link from "next/link"
-import { useState } from "react"
-import { Menu, X } from "lucide-react"
 import {
-  ClerkProvider,
   SignInButton,
   SignUpButton,
   SignedIn,
   SignedOut,
-  UserButton,
+  UserButton
 } from '@clerk/nextjs'
+import { Menu, X } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import { ModeToggle } from "../ModeToggle"
 
 const navItems = [
-  { label: "Who are we?", href: "#who-are-we" },
-  { label: "9 Point Agenda", href: "#agenda" },
+  { label: "Who are we?", href: "about" },
+  { label: "9 Point Agenda", href: "agendas" },
   { label: "Press Statement", href: "#press" },
   { label: "Partnerships", href: "#partnerships" },
   { label: "Become A Member", href: "#membership" },
@@ -35,6 +35,7 @@ export function Navbar() {
                 className="w-16 h-16 rounded-full object-cover"
               />
           </Link>
+          <ModeToggle />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">

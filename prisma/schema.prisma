@@ -118,3 +118,32 @@ enum ApplicationStatus {
   APPROVED
   REJECTED
 }
+
+
+// Add to your schema.prisma
+
+model PlatformConnection {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   // Clerk user ID
+  platform  Platform // TikTok or Instagram
+  url       String   // Platform URL
+  username  String?
+  followers Int      @default(0)
+  avatar    String?
+  verified  Boolean  @default(false)
+  
+  // Stats refresh
+  lastFetchedAt DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, platform]) // One connection per platform per user
+  @@index([userId])
+  @@index([lastFetchedAt])
+}
+
+enum Platform {
+  TIKTOK
+  INSTAGRAM
+}
