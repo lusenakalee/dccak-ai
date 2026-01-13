@@ -12,9 +12,11 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
 import { Navbar } from '@/components/landing/navbar'
 import { Footer } from '@/components/landing/footer'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import SidebarToggle from '@/components/SidebarToggle'
+import { AppSidebar } from '@/components/app-sidebar'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -40,27 +42,29 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          
-          <header className="">
-            {/* <SignedOut>
-              <SignInButton />
-              <SignUpButton>
-                <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn> */}
-            {/* <Navbar/> */}
-          </header>
+                <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+         
           <main>
+<SidebarProvider>
+<SidebarInset>
 
           {children}
-         
+              
+</SidebarInset>
+
+<AppSidebar side="right" />
+
+   {/* <FloatingDock /> */}
+              <SidebarToggle /> 
+</SidebarProvider>
           </main>
-            
+              <Toaster />
+              </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

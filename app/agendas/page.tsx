@@ -1,5 +1,5 @@
-import { AgendasHeroSection } from "@/components/agendas-hero-section"
-import { AgendasContentSection } from "@/components/agendas-content-section"
+import { AgendasHeroSection } from "@/components/agendas-comps/agendas-hero-section"
+import { AgendasContentSection } from "@/components/agendas-comps/agendas-content-section"
 
 export const metadata = {
   title: "9-Point Agenda | DCCAK",

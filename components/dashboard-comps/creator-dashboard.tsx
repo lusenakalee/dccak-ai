@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ProfileImage } from "../ProfileImage";
 
 // Platform Connection Type
 interface PlatformConnection {
@@ -303,6 +304,8 @@ const fetchAppliedCampaigns = async () => {
               <p className="text-pretty text-muted-foreground">
                 Professional Content Creator • Technology & Lifestyle
               </p>
+                              <ProfileImage/>
+
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Users className="size-4" />

@@ -21,6 +21,7 @@ export default function HomePage() {
         <RegistrationCTA />
         <GallerySection />
         <TestimonialsSection />
+         <Footer />
       </main>
     </div>
   )

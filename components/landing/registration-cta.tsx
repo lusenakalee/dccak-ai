@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { UserPlus, CheckCircle } from "lucide-react"
+import { CheckCircle, UserPlus } from "lucide-react"
 
 export function RegistrationCTA() {
   return (
-    <section className="bg-gradient-to-br from-[#300843] to-[#626262] py-16 lg:py-24" id="membership">
+    <section className="bg-linear-to-br from-[#300843] to-[#626262] py-16 lg:py-24" id="membership">
       <div className="container mx-auto px-4">
         <Card className="bg-white/5 border-[#ff3465] border-2 p-8 lg:p-12 max-w-4xl mx-auto">
           <div className="text-center space-y-6">
@@ -29,7 +29,7 @@ export function RegistrationCTA() {
                 "Creator database listing",
               ].map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3 text-white">
-                  <CheckCircle className="text-[#ff3465] flex-shrink-0" size={20} />
+                  <CheckCircle className="text-[#ff3465] shrink-0" size={20} />
                   <span>{benefit}</span>
                 </div>
               ))}
