@@ -12,7 +12,9 @@ import { Footer } from "@/components/landing/footer"
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      <main>
+      <main>.
+                    <Navbar/>
+
         <HeroSection />
         <MissionVisionSection />
         <AgendaSection />

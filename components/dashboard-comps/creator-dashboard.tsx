@@ -304,7 +304,6 @@ const fetchAppliedCampaigns = async () => {
               <p className="text-pretty text-muted-foreground">
                 Professional Content Creator • Technology & Lifestyle
               </p>
-                              <ProfileImage/>
 
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">

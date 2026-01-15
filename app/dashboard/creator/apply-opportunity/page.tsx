@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, CheckCircle2 } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 
-export default function ApplyOpportunityPage() {
+function ApplyOpportunityContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const campaignId = searchParams.get("campaignId")
@@ -94,5 +94,21 @@ export default function ApplyOpportunityPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ApplyOpportunityPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-xl py-12">
+        <Card>
+          <CardContent className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <ApplyOpportunityContent />
+    </Suspense>
   )
 }

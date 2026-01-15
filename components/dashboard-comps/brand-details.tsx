@@ -23,11 +23,11 @@ import {
   Users,
 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { format } from "date-fns"
 import { toast } from "sonner"
 
-export function BrandDetails() {
+function BrandDetailsContent() {
   const { isSignedIn, user, isLoaded } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -87,7 +87,6 @@ export function BrandDetails() {
     } catch (error) {
       console.error("Error fetching campaign:", error)
       toast.error("Failed to load campaign details")
-
     } finally {
       setLoading(false)
     }
@@ -127,13 +126,12 @@ export function BrandDetails() {
       if (response.ok) {
         const campaign = await response.json()
         setIsActive(campaign.status === "ACTIVE")
-        
-       toast.success(
-  shouldActivate
-    ? "Campaign posted successfully and is now live!"
-    : "Campaign saved as draft"
-)
-
+       
+        toast.success(
+          shouldActivate
+            ? "Campaign posted successfully and is now live!"
+            : "Campaign saved as draft"
+        )
 
         if (!campaignId) {
           router.push(`/dashboard/brand/details?id=${campaign.id}`)
@@ -144,7 +142,6 @@ export function BrandDetails() {
     } catch (error) {
       console.error("Error saving campaign:", error)
       toast.error("Failed to save campaign. Please try again.")
-
     } finally {
       setSaving(false)
     }
@@ -152,7 +149,7 @@ export function BrandDetails() {
 
   const handleStatusToggle = async (checked: boolean) => {
     const newStatus = checked ? "ACTIVE" : "DRAFT"
-    
+   
     try {
       setSaving(true)
       const response = await fetch(`/api/campaigns/${campaignId}`, {
@@ -169,18 +166,16 @@ export function BrandDetails() {
       if (response.ok) {
         setIsActive(checked)
         toast.success(
-  checked
-    ? "Campaign is now active and visible to creators"
-    : "Campaign moved to draft"
-)
-
+          checked
+            ? "Campaign is now active and visible to creators"
+            : "Campaign moved to draft"
+        )
       } else {
         throw new Error("Failed to update status")
       }
     } catch (error) {
       console.error("Error updating status:", error)
-      toast.error("Failed to update campaign status"
-      )
+      toast.error("Failed to update campaign status")
     } finally {
       setSaving(false)
     }
@@ -489,5 +484,17 @@ export function BrandDetails() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export function BrandDetails() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <BrandDetailsContent />
+    </Suspense>
   )
 }
