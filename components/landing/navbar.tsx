@@ -48,8 +48,23 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
-               <SignedOut>
-              <SignInButton />
+            
+            {/* Dashboard link - only visible when signed in */}
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                className="text-white text-sm font-medium relative py-2 transition-colors hover:text-[#ff3465] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-[#ff3465] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
+              >
+                Dashboard
+              </Link>
+            </SignedIn>
+
+            <SignedOut>
+              <SignInButton >
+                <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  Sign In
+                </button>
+              </SignInButton>
               <SignUpButton>
                 <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
                   Sign Up
@@ -80,6 +95,17 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            
+            {/* Dashboard link for mobile - only visible when signed in */}
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="block text-white py-3 text-sm font-medium border-b border-white/10 hover:text-[#ff3465] transition-colors"
+              >
+                Dashboard
+              </Link>
+            </SignedIn>
           </div>
         )}
       </div>
